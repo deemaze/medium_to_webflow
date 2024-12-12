@@ -1,5 +1,13 @@
 #!/usr/bin/env ruby
+
 # frozen_string_literal: true
 
 require "medium_to_webflow"
-MediumToWebflow::CLI.start(ARGV)
+
+begin
+  MediumToWebflow::CLI.start(ARGV)
+rescue StandardError => e
+  puts "  \e[31mERROR (#{e.class}): #{e.message}\e[0m"
+  puts e.backtrace if ENV["VERBOSE"]
+  exit 1
+end

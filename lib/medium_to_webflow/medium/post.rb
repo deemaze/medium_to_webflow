@@ -4,17 +4,18 @@ require "nokogiri"
 
 module MediumToWebflow
   module Medium
+    # Medium::Post represents a Medium post.
     class Post
       attr_reader :title, :url, :published_at, :author, :image_url, :category, :slug
 
-      def initialize(title:, url:, published_at:, author:, image_url:, category:, slug:)
-        @title = title
-        @url = url
-        @published_at = published_at
-        @author = author
-        @image_url = image_url
-        @category = category
-        @slug = slug
+      def initialize(attributes)
+        @title = attributes[:title]
+        @url = attributes[:url]
+        @published_at = attributes[:published_at]
+        @author = attributes[:author]
+        @image_url = attributes[:image_url]
+        @category = attributes[:category]
+        @slug = attributes[:slug]
       end
 
       class << self
@@ -32,10 +33,10 @@ module MediumToWebflow
 
         private
 
-        def extract_image_url(content, description)
-          # Try to get image from content first
-          if content
-            doc = Nokogiri::HTML(content)
+        def extract_image_url(content_encoded, description)
+          # Try to get image from content_encoded first
+          if content_encoded
+            doc = Nokogiri::HTML(content_encoded)
             img = doc.at_css("img")
             return img["src"] if img && img["src"]
           end

@@ -2,6 +2,7 @@
 
 module MediumToWebflow
   module Webflow
+    # Webflow::Client is a class that interacts with the Webflow API to upsert posts into a collection.
     class Client
       include HTTParty
       base_uri "https://api.webflow.com/v2"

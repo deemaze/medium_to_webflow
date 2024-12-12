@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module MediumToWebflow
+  # CLI is a class that provides a command-line interface for the MediumToWebflow gem.
   class CLI < Thor
     desc "sync", "Sync Medium posts to Webflow collection"
     method_option :medium_username, type: :string, required: true, aliases: "-u"

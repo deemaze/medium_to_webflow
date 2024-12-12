@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module MediumToWebflow
+  # SyncService is a class that fetches posts from a Medium RSS feed and upserts them into a Webflow collection.
   class SyncService
     def self.call(username:, webflow_token:, webflow_collection_id:)
       new(

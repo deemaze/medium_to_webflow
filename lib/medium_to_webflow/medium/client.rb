@@ -5,6 +5,7 @@ require "rss"
 
 module MediumToWebflow
   module Medium
+    # Medium::Client is a class that fetches posts from a Medium RSS feed, and returns them as a list of Post objects.
     class Client
       include HTTParty
       base_uri "https://medium.com/feed"
