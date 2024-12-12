@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+require:
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 3.0
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
