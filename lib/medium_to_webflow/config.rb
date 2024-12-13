@@ -1,11 +1,27 @@
 # frozen_string_literal: true
 
+require "logger"
+
 module MediumToWebflow
   class Config
     REQUIRED_WEBFLOW_FIELDS = %w[name slug].freeze
     REQUIRED_SETTINGS = %i[medium_username webflow_api_token webflow_collection_id].freeze
 
-    attr_accessor :medium_username, :webflow_api_token, :webflow_collection_id, :field_mappings
+    attr_accessor :medium_username, :webflow_api_token, :webflow_collection_id, :field_mappings,
+                  :logger, :force_update
+    attr_reader :verbose
+
+    def initialize
+      @logger = Logger.new($stdout)
+      @logger.level = Logger::INFO
+      @verbose = false
+      @force_update = false
+    end
+
+    def verbose=(value)
+      @verbose = value
+      @logger.level = value ? Logger::DEBUG : Logger::INFO
+    end
 
     def validate!
       validate_required_settings!

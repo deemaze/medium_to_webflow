@@ -24,9 +24,22 @@ module MediumToWebflow
                   type: :hash,
                   aliases: "-m",
                   desc: "Map Medium post fields to Webflow collection fields (e.g. title:name content:post-content)"
+    method_option :verbose,
+                  type: :boolean,
+                  aliases: "-v",
+                  desc: "Enable verbose logging"
+    method_option :force_update,
+                  type: :boolean,
+                  aliases: "-f",
+                  desc: "Force update existing posts (default: false)"
 
     def sync
       load_config if options[:config]
+
+      MediumToWebflow.configure do |config|
+        config.verbose = options[:verbose]
+        config.force_update = options[:force_update]
+      end
 
       MediumToWebflow.sync(options)
     rescue Error => e

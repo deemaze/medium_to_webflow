@@ -13,23 +13,35 @@ module MediumToWebflow
         @collection_id = collection_id
         @field_mappings = field_mappings
         self.class.headers "Authorization" => "Bearer #{api_token}"
+        @logger = MediumToWebflow.configuration.logger
       end
 
       def upsert_post(medium_post)
         fields = build_fields(medium_post)
-
-        # Find which Medium field is mapped to Webflow's "slug" field
         medium_slug_field = @field_mappings.key("slug")
         existing_item = find_item(slug: medium_post.send(medium_slug_field))
 
+        handle_existing_or_create_item(existing_item, fields, medium_post)
+      end
+
+      private
+
+      def handle_existing_or_create_item(existing_item, fields, medium_post)
         if existing_item
-          update_item(item_id: existing_item["id"], fields: fields)
+          handle_existing_item(existing_item, fields, medium_post)
         else
           create_item(fields: fields)
         end
       end
 
-      private
+      def handle_existing_item(existing_item, fields, medium_post)
+        if MediumToWebflow.configuration.force_update
+          @logger.debug "Forcing update of existing item: #{existing_item["id"]}"
+          update_item(item_id: existing_item["id"], fields: fields)
+        else
+          @logger.info "Skipping existing item: #{medium_post.title} (use --force-update to override)"
+        end
+      end
 
       def find_item(slug:)
         response = self.class.get("/collections/#{@collection_id}/items/live", query: { slug: slug })
@@ -38,6 +50,9 @@ module MediumToWebflow
       end
 
       def create_item(fields:)
+        @logger.debug "Creating Webflow item in collection: #{@collection_id}"
+        @logger.debug "Fields: #{fields.inspect}" if MediumToWebflow.configuration.verbose
+
         response = self.class.post("/collections/#{@collection_id}/items/live", body: {
           fieldData: fields
         }.to_json)
@@ -45,6 +60,9 @@ module MediumToWebflow
       end
 
       def update_item(item_id:, fields:)
+        @logger.debug "Updating Webflow item: #{item_id} in collection: #{@collection_id}"
+        @logger.debug "Fields: #{fields.inspect}" if MediumToWebflow.configuration.verbose
+
         response = self.class.patch("/collections/#{@collection_id}/items/#{item_id}/live", body: {
           fieldData: fields
         }.to_json)

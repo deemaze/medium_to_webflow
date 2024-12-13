@@ -18,95 +18,9 @@ $ gem install medium_to_webflow
 
 ## Usage
 
-### As a Ruby Library
+There are two ways to configure and use the gem:
 
-You can configure the gem using a configuration block:
-
-```ruby
-MediumToWebflow.configure do |config|
-  # Required settings
-  config.medium_username = "your-medium-username"
-  config.webflow_api_token = "your-webflow-api-token"
-  config.webflow_collection_id = "your-collection-id"
-
-  # Customize field mappings (optional)
-  config.field_mappings = {
-    # Required mappings (Webflow needs these fields)
-    title: "name",           # Maps Medium title to Webflow's name field
-    guid: "slug",           # Maps Medium guid to Webflow's slug field
-
-    # Optional mappings (customize based on your Webflow collection fields)
-    url: "medium-url",      # Maps Medium URL to a custom Webflow field
-    published_at: "published-at",
-    author: "author",
-    image_url: "image",     # Will be converted to { url: image_url }
-    category: "category"
-  }
-end
-
-# Then sync your posts
-MediumToWebflow.sync
-```
-
-Or pass options directly to the sync method:
-
-```ruby
-MediumToWebflow.sync(
-  medium_username: "your-medium-username",
-  webflow_api_token: "your-webflow-api-token",
-  webflow_collection_id: "your-collection-id"
-)
-```
-
-### Field Mappings
-
-The gem maps Medium post attributes to Webflow collection fields. You can customize these mappings to match your Webflow collection structure:
-
-Available Medium post attributes:
-
-- `title`: The post title
-- `url`: The Medium post URL
-- `published_at`: Publication date
-- `author`: Post author
-- `image_url`: Featured image URL
-- `category`: Post category
-- `guid`: The Medium post guid
-
-Required Webflow fields:
-
-- `name`: The item name (usually mapped from Medium's title)
-- `slug`: The URL slug (usually mapped from Medium's slug)
-
-Example custom mapping:
-
-```ruby
-config.field_mappings = {
-  # Map Medium title to a custom Webflow field
-  title: "article-title",
-  # Map Medium URL to a custom Webflow field
-  url: "original-url",
-  # Map publication date to a custom Webflow field
-  published_at: "publish-date",
-  # Special handling for images - will be converted to { url: image_url }
-  image_url: "featured-image"
-}
-```
-
-### Command Line Interface
-
-You have two options to run the sync:
-
-1. Using command-line arguments:
-
-```bash
-$ medium_to_webflow sync \
-  --medium-username=your-username \
-  --webflow-api-token=your-token \
-  --webflow-collection-id=your-collection-id \
-  --field-mappings=title:name,guid:slug,url:medium-url,published_at:published-at,author:author,image_url:image,category:category
-```
-
-2. Using a configuration file:
+### 1. Using a Configuration File (Recommended)
 
 First, generate a sample configuration file:
 
@@ -118,13 +32,92 @@ $ medium_to_webflow init
 $ medium_to_webflow init --path=./config.rb
 ```
 
-Then run the sync using the config file:
+The configuration file will look like this:
+
+```ruby
+MediumToWebflow.configure do |config|
+  # Required settings
+  config.medium_username = ENV.fetch("MEDIUM_USERNAME", nil)
+  config.webflow_api_token = ENV.fetch("WEBFLOW_API_TOKEN", nil)
+  config.webflow_collection_id = ENV.fetch("WEBFLOW_COLLECTION_ID", nil)
+
+  # Field mappings from Medium post attributes to Webflow field names
+  config.field_mappings = {
+    # Required mappings
+    title: "name",          # Maps to Webflow's name field
+    guid: "slug",           # Maps to Webflow's slug field
+
+    # Optional mappings (customize based on your collection)
+    url: "source-url",      # Maps to a custom field
+    published_at: "date",   # Maps to a date field
+    author: "author",       # Maps to an author field
+    image_url: "image",     # Maps to an image field (converted to { url: value })
+    category: "category"    # Maps to a category field
+  }
+end
+```
+
+Then run the sync:
 
 ```bash
 $ medium_to_webflow sync -c config/medium_to_webflow.rb
 ```
 
-You can also mix both approaches - use a config file for defaults and override specific options via command line.
+### 2. Using Command Line Options
+
+You can also run the sync directly with command line options:
+
+```bash
+$ medium_to_webflow sync \
+  --medium-username=your-username \
+  --webflow-api-token=your-token \
+  --webflow-collection-id=your-collection-id \
+  --field-mappings=title:name,guid:slug,url:medium-url
+```
+
+### Available Options
+
+```bash
+$ medium_to_webflow sync [options]
+    -u, --medium-username=USERNAME    Medium username (without the @ symbol)
+    -t, --webflow-api-token=TOKEN    Webflow API token with CMS permissions
+    -l, --webflow-collection-id=ID   The ID of the Webflow collection where posts will be imported
+    -m, --field-mappings=MAPPINGS    Map Medium post fields to Webflow collection fields
+    -v, --verbose                    Enable verbose logging
+    -f, --force-update              Force update existing posts (default: false)
+    -c, --config=PATH                Path to a Ruby config file
+    -h, --help                       Show this help message
+```
+
+#### Logging Options
+
+The verbose flag (`-v`) will output detailed debugging information during the sync process, which can be helpful for troubleshooting issues.
+
+#### Update Behavior
+
+The `--force-update` flag controls how existing posts are handled:
+
+- When set to false (default), the sync will skip posts that already exist in Webflow
+- When true, existing posts will be updated with the latest content from Medium
+
+### Available Medium Post Attributes
+
+When configuring field mappings, you can use any of these Medium post attributes:
+
+- `title`: The post title
+- `url`: The Medium post URL
+- `published_at`: Publication date
+- `author`: Post author
+- `image_url`: Featured image URL
+- `category`: Post category
+- `guid`: The post's unique identifier
+
+### Required Webflow Fields
+
+Your field mappings must include these Webflow fields:
+
+- `name`: The item name in Webflow
+- `slug`: The URL slug in Webflow
 
 ## Development
 
