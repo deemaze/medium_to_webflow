@@ -5,13 +5,16 @@ require "rss"
 
 module MediumToWebflow
   module Medium
-    # Medium::Client is a class that fetches posts from a Medium RSS feed, and returns them as a list of Post objects.
     class Client
       include HTTParty
       base_uri "https://medium.com/feed"
 
-      def fetch_posts(username)
-        response = self.class.get("/#{username}")
+      def initialize(username:)
+        @username = username
+      end
+
+      def fetch_posts
+        response = self.class.get("/#{@username}")
         raise Error, "Failed to fetch Medium posts: #{response.code}" unless response.success?
 
         parse_feed(response.body)

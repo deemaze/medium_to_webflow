@@ -4,9 +4,8 @@ require "nokogiri"
 
 module MediumToWebflow
   module Medium
-    # Medium::Post represents a Medium post.
     class Post
-      attr_reader :title, :url, :published_at, :author, :image_url, :category, :slug
+      attr_reader :title, :url, :published_at, :author, :image_url, :category, :guid
 
       def initialize(attributes)
         @title = attributes[:title]
@@ -15,7 +14,7 @@ module MediumToWebflow
         @author = attributes[:author]
         @image_url = attributes[:image_url]
         @category = attributes[:category]
-        @slug = attributes[:slug]
+        @guid = attributes[:guid]
       end
 
       class << self
@@ -27,7 +26,7 @@ module MediumToWebflow
             author: item.author || item.dc_creator,
             image_url: extract_image_url(item.content_encoded, item.description),
             category: humanize_category(item.categories&.first&.content),
-            slug: generate_slug(item.guid.content)
+            guid: extract_guid(item.guid.content)
           )
         end
 
@@ -49,7 +48,7 @@ module MediumToWebflow
           img["src"] if img && img["src"]
         end
 
-        def generate_slug(guid_content)
+        def extract_guid(guid_content)
           guid_content.split("/").last.downcase
         end
 
@@ -58,7 +57,7 @@ module MediumToWebflow
 
           category
             .tr("-", " ")
-            .split(" ")
+            .split
             .map(&:capitalize)
             .join(" ")
         end

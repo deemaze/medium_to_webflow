@@ -1,43 +1,139 @@
-# MediumToWebflow
+# Medium to Webflow
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/medium_to_webflow`. To experiment with that code, run `bin/console` for an interactive prompt.
+Sync your Medium posts to a Webflow CMS collection.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add this line to your application's Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem 'medium_to_webflow'
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Or install it yourself as:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+$ gem install medium_to_webflow
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+### As a Ruby Library
+
+You can configure the gem using a configuration block:
+
+```ruby
+MediumToWebflow.configure do |config|
+  # Required settings
+  config.medium_username = "your-medium-username"
+  config.webflow_api_token = "your-webflow-api-token"
+  config.webflow_collection_id = "your-collection-id"
+
+  # Customize field mappings (optional)
+  config.field_mappings = {
+    # Required mappings (Webflow needs these fields)
+    title: "name",           # Maps Medium title to Webflow's name field
+    guid: "slug",           # Maps Medium guid to Webflow's slug field
+
+    # Optional mappings (customize based on your Webflow collection fields)
+    url: "medium-url",      # Maps Medium URL to a custom Webflow field
+    published_at: "published-at",
+    author: "author",
+    image_url: "image",     # Will be converted to { url: image_url }
+    category: "category"
+  }
+end
+
+# Then sync your posts
+MediumToWebflow.sync
+```
+
+Or pass options directly to the sync method:
+
+```ruby
+MediumToWebflow.sync(
+  medium_username: "your-medium-username",
+  webflow_api_token: "your-webflow-api-token",
+  webflow_collection_id: "your-collection-id"
+)
+```
+
+### Field Mappings
+
+The gem maps Medium post attributes to Webflow collection fields. You can customize these mappings to match your Webflow collection structure:
+
+Available Medium post attributes:
+
+- `title`: The post title
+- `url`: The Medium post URL
+- `published_at`: Publication date
+- `author`: Post author
+- `image_url`: Featured image URL
+- `category`: Post category
+- `guid`: The Medium post guid
+
+Required Webflow fields:
+
+- `name`: The item name (usually mapped from Medium's title)
+- `slug`: The URL slug (usually mapped from Medium's slug)
+
+Example custom mapping:
+
+```ruby
+config.field_mappings = {
+  # Map Medium title to a custom Webflow field
+  title: "article-title",
+  # Map Medium URL to a custom Webflow field
+  url: "original-url",
+  # Map publication date to a custom Webflow field
+  published_at: "publish-date",
+  # Special handling for images - will be converted to { url: image_url }
+  image_url: "featured-image"
+}
+```
+
+### Command Line Interface
+
+You have two options to run the sync:
+
+1. Using command-line arguments:
+
+```bash
+$ medium_to_webflow sync \
+  --medium-username=your-username \
+  --webflow-api-token=your-token \
+  --webflow-collection-id=your-collection-id \
+  --field-mappings=title:name,guid:slug,url:medium-url,published_at:published-at,author:author,image_url:image,category:category
+```
+
+2. Using a configuration file:
+
+First, generate a sample configuration file:
+
+```bash
+$ medium_to_webflow init
+# Creates config/medium_to_webflow.rb with environment variables support
+
+# Or specify a custom path
+$ medium_to_webflow init --path=./config.rb
+```
+
+Then run the sync using the config file:
+
+```bash
+$ medium_to_webflow sync -c config/medium_to_webflow.rb
+```
+
+You can also mix both approaches - use a config file for defaults and override specific options via command line.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/medium_to_webflow. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/medium_to_webflow/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the MediumToWebflow project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/medium_to_webflow/blob/main/CODE_OF_CONDUCT.md).
+The gem is available as open source under the terms of the [MIT License](LICENSE.txt).

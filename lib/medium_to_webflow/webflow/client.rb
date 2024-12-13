@@ -2,63 +2,73 @@
 
 module MediumToWebflow
   module Webflow
-    # Webflow::Client is a class that interacts with the Webflow API to upsert posts into a collection.
     class Client
       include HTTParty
       base_uri "https://api.webflow.com/v2"
       headers "Accept" => "application/json"
       headers "Content-Type" => "application/json"
 
-      def initialize(token)
-        @token = token
-        self.class.headers "Authorization" => "Bearer #{token}"
+      def initialize(api_token:, collection_id:, field_mappings:)
+        @api_token = api_token
+        @collection_id = collection_id
+        @field_mappings = field_mappings
+        self.class.headers "Authorization" => "Bearer #{api_token}"
       end
 
-      def upsert_post(collection_id:, post:)
-        existing_item = find_item(collection_id: collection_id, slug: post.slug)
+      def upsert_post(medium_post)
+        fields = build_fields(medium_post)
 
-        fields = build_fields(post)
+        # Find which Medium field is mapped to Webflow's "slug" field
+        medium_slug_field = @field_mappings.key("slug")
+        existing_item = find_item(slug: medium_post.send(medium_slug_field))
 
         if existing_item
-          update_item(collection_id: collection_id, item_id: existing_item["id"], fields: fields)
+          update_item(item_id: existing_item["id"], fields: fields)
         else
-          create_item(collection_id: collection_id, fields: fields)
+          create_item(fields: fields)
         end
       end
 
       private
 
-      def find_item(collection_id:, slug:)
-        response = self.class.get("/collections/#{collection_id}/items/live", query: { slug: slug })
+      def find_item(slug:)
+        response = self.class.get("/collections/#{@collection_id}/items/live", query: { slug: slug })
 
         handle_response(response)["items"]&.first
       end
 
-      def create_item(collection_id:, fields:)
-        response = self.class.post("/collections/#{collection_id}/items/live", body: {
+      def create_item(fields:)
+        response = self.class.post("/collections/#{@collection_id}/items/live", body: {
           fieldData: fields
         }.to_json)
         handle_response(response)
       end
 
-      def update_item(collection_id:, item_id:, fields:)
-        response = self.class.patch("/collections/#{collection_id}/items/#{item_id}/live", body: {
+      def update_item(item_id:, fields:)
+        response = self.class.patch("/collections/#{@collection_id}/items/#{item_id}/live", body: {
           fieldData: fields
         }.to_json)
         handle_response(response)
       end
 
-      def build_fields(post)
-        {
-          "medium-id": post.slug,
-          name: post.title,
-          slug: post.slug,
-          "slug-url": post.url,
-          "published-at": post.published_at.iso8601,
-          writer: post.author,
-          image: { url: post.image_url },
-          segment: post.category
-        }
+      def build_fields(medium_post)
+        @field_mappings.each_with_object({}) do |(medium_field, webflow_field), fields|
+          value = medium_post.public_send(medium_field)
+          next if value.nil?
+
+          fields[webflow_field] = process_field_value(medium_field, value)
+        end
+      end
+
+      def process_field_value(field, value)
+        # Handle the image field by converting it to Webflow's expected format { url: "image_url" }
+        return { url: value } if field == :image_url
+
+        # Convert DateTime/Time objects to ISO8601 format for Webflow's date fields
+        return value.iso8601 if value.respond_to?(:iso8601)
+
+        # Return value as-is for all other field types
+        value
       end
 
       def handle_response(response)
