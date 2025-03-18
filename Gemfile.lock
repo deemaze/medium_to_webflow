@@ -8,7 +8,7 @@ GIT
 PATH
   remote: .
   specs:
-    medium_to_webflow (0.2.0)
+    medium_to_webflow (0.2.0.beta1)
       httparty (~> 0.22.0)
       nokogiri (~> 1.17)
       rss (~> 0.3.1)
