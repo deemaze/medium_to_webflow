@@ -5,6 +5,8 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in medium_to_webflow.gemspec
 gemspec
 
+gem "webflow-rb", git: "https://github.com/pjpires/webflow-rb.git", ref: "e04902b"
+
 group :development do
   gem "debug"
   gem "rake", "~> 13.0"

@@ -1,11 +1,19 @@
+GIT
+  remote: https://github.com/pjpires/webflow-rb.git
+  revision: e04902b84ea39dda09aeac70704e7817bef0c7cb
+  ref: e04902b
+  specs:
+    webflow-rb (1.1.3)
+
 PATH
   remote: .
   specs:
-    medium_to_webflow (0.1.0)
+    medium_to_webflow (0.2.0)
       httparty (~> 0.22.0)
       nokogiri (~> 1.17)
       rss (~> 0.3.1)
       thor (~> 1.3)
+      webflow-rb (~> 1.1)
 
 GEM
   remote: https://rubygems.org/
@@ -103,6 +111,7 @@ DEPENDENCIES
   rubocop (~> 1.21)
   rubocop-rake (~> 0.6.0)
   rubocop-rspec (~> 3.2.0)
+  webflow-rb!
 
 BUNDLED WITH
    2.5.23

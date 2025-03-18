@@ -9,7 +9,6 @@ require_relative "medium_to_webflow/errors"
 
 require_relative "medium_to_webflow/medium/client"
 require_relative "medium_to_webflow/medium/post"
-require_relative "medium_to_webflow/webflow/client"
 require_relative "medium_to_webflow/sync_service"
 require_relative "medium_to_webflow/cli"
 
