@@ -29,4 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "nokogiri", "~> 1.17"
   spec.add_dependency "rss", "~> 0.3.1"
   spec.add_dependency "thor", "~> 1.3"
+  spec.add_dependency "webflow-rb", "~> 1.1"
 end
